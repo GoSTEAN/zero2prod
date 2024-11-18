@@ -1,6 +1,5 @@
 use secrecy::{Secret, ExposeSecret};
 use dotenv::dotenv;
-use std::env;
 use config::{Config, ConfigError};
 
 #[derive(serde::Deserialize)]

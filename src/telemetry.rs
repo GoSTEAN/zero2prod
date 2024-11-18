@@ -1,8 +1,6 @@
 use tracing::{span, Event};
-use tracing::subscriber::set_global_default;
 use tracing::Subscriber as TracingSubscriber;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer}; 
-use tracing_log::LogTracer;
 use tracing_subscriber::{fmt::MakeWriter, layer::SubscriberExt, EnvFilter, Registry};
 
 pub trait Subscriber {
