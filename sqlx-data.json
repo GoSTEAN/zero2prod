@@ -1,0 +1,13 @@
+{
+  "db": "PostgreSQL",
+  "d0aa2f4c93d31bf6: SELECT * FROM subscriptions": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "SELECT * FROM subscriptions"
+  }
+}

@@ -27,7 +27,7 @@ pub async fn subscribe(
     {
         Ok(_) =>  HttpResponse::Ok().finish(),
     
-        Err(e) => HttpResponse::InternalServerError().finish()
+        Err(_e) => HttpResponse::InternalServerError().finish()
     }
 }
 

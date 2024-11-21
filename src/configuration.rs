@@ -1,6 +1,6 @@
 use secrecy::{Secret, ExposeSecret};
 use dotenv::dotenv;
-use config::{Config, ConfigError};
+use config::Config;
 
 #[derive(serde::Deserialize)]
 pub struct DatabaseSettings {
@@ -14,21 +14,59 @@ pub struct DatabaseSettings {
 #[derive(serde::Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
-    pub application_port: u16
+    pub application: ApplicationSettings,
 }
 
-pub fn get_configuration() -> Result<Settings, ConfigError> {
+#[derive(serde::Deserialize)]
+pub struct ApplicationSettings {
+    pub port: u16,
+    pub host: String,
+}
+
+pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     dotenv().ok();
-    // Note: env::var("DATABASE_URL") result is currently unused
     
-    // Initialize our configuration reader
+    let base_path = std::env::current_dir().expect("Failed to determine the current directory");
+    let configuration_directory = base_path.join("configuration");
+
+    let _environment: Environment = std::env::var("APP_ENVIRONMENT")
+        .unwrap_or_else(|_| "local".into())
+        .try_into()
+        .expect("Failed to parse APP_ENVIRONMENT.");
+
     let settings = Config::builder()
-        // Add configuration values from a file named `configuration.yaml`
-        .add_source(config::File::with_name("configuration"))
-        .build()?;
-    
-    // Try to convert the configuration values it read into our Settings type
-    settings.try_deserialize::<Settings>()
+        .add_source(config::File::from(configuration_directory.join("base.yaml")))
+        .build()?
+        .try_deserialize::<Settings>()?;
+
+    Ok(settings)
+}
+
+pub enum Environment {
+    Local,
+    Production,
+}
+
+impl Environment {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Environment::Local => "local",
+            Environment::Production => "production",
+        }
+    }
+}
+
+impl TryFrom<String> for Environment {
+    type Error = String;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        match s.to_lowercase().as_str() {
+                "local" => Ok(Self::Local),
+                "production" => Ok(Self::Production),
+                other => Err(format!("{} is not a supported environment. Use either 'loacal' or 'production'.", other
+            )),
+        }
+    }
 }
 
 impl DatabaseSettings {

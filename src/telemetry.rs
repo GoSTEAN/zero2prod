@@ -28,6 +28,6 @@ where
         .with(formatting_layer)
 }
 
-pub fn init_subscriber(subscriber: impl TracingSubscriber + Sync + Send) {
+pub fn init_subscriber(_subscriber: impl TracingSubscriber + Sync + Send) {
 
 }

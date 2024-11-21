@@ -1,0 +1,10 @@
+application: 
+  host: "0.0.0.0"  # This allows connections from outside the container
+  port: 8000
+database:
+  host: "localhost"
+  port: 5432
+  username: "postgres"
+  password: "password"
+  database_name: "newsletter" 
+
