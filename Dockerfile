@@ -3,21 +3,27 @@ FROM rust:latest AS builder
 WORKDIR /app
 RUN apt update && apt install lld clang -y
 
-# Copy project files
+# Copy configuration files first
+COPY configuration configuration/
 COPY . .
+
 ENV SQLX_OFFLINE true
 RUN cargo build --release
 
-FROM debian:bullseye-slim AS runtime
-WORKDIR /app
+# Create a new stage with a minimal image
+FROM debian:bookworm-slim
 
-RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends openssl ca-certificates \
-# Clean up
-    && apt-get autoremove -y \
-    && apt-get clean -y \
-    & rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+# Install OpenSSL - this is what we were missing!
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the binary from builder
 COPY --from=builder /app/target/release/zero2prod zero2prod
+# Copy configuration
 COPY configuration configuration
+
+EXPOSE 8000
 ENV APP_ENVIRONMENT production
 ENTRYPOINT ["./zero2prod"]

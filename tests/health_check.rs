@@ -1,15 +1,13 @@
 extern crate tokio;
-use tracing::{subscriber, info};
 use zero2prod::{configuration::DatabaseSettings, startup::run};
-use std::{default, net::TcpListener};
+use std::net::TcpListener;
 use zero2prod::telemetry::{get_subscriber, init_subscriber};
 use sqlx::{Connection, Executor, PgConnection, PgPool};  // Added Executor trait
-use zero2prod::configuration::{self, get_configuration};
-use dotenv::dotenv;
-use std::env;
+use zero2prod::configuration::get_configuration;
+
 use uuid::Uuid;
 use once_cell::sync::Lazy;
-use secrecy::{Secret, ExposeSecret};
+use secrecy::ExposeSecret;
 
 pub struct TestApp {
     pub address: String,

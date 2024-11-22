@@ -1,2 +1,10 @@
 application:
-  host: 0.0.0.0 
+  host: 0.0.0.0
+  ssl:
+    enabled: true
+    cert_path: "/etc/ssl/certs/ca-certificates.crt"
+    verify_peer: true
+
+environment:
+  SSL_CERT_DIR: "/etc/ssl/certs"
+  SSL_CERT_FILE: "/etc/ssl/certs/ca-certificates.crt"
