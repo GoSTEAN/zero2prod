@@ -4,10 +4,8 @@ use std::net::TcpListener;
 use zero2prod::telemetry::{get_subscriber, init_subscriber};
 use sqlx::{Connection, Executor, PgConnection, PgPool};  // Added Executor trait
 use zero2prod::configuration::get_configuration;
-
 use uuid::Uuid;
 use once_cell::sync::Lazy;
-use secrecy::ExposeSecret;
 
 pub struct TestApp {
     pub address: String,

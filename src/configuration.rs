@@ -1,5 +1,3 @@
-use std::option;
-
 use secrecy::{Secret, ExposeSecret};
 use dotenv::dotenv;
 use config::Config;
