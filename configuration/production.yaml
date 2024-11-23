@@ -1,5 +1,13 @@
+database:
+  host: "dpg-ct106fogph6c73begrf0-a"
+  port: 5432
+  username: "zero2proddb_user"
+  password: "2Zb1bmGJQnYuLomXCutRmrRYSYM3F6GU"
+  database_name: "zero2proddb"
+
 application:
-  host: 0.0.0.0
+  host: "0.0.0.0"
+  port: 8000
   ssl:
     enabled: true
     cert_path: "/etc/ssl/certs/ca-certificates.crt"

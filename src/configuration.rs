@@ -34,17 +34,23 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let base_path = std::env::current_dir().expect("Failed to determine the current directory");
     let configuration_directory = base_path.join("configuration");
 
-    let _environment: Environment = std::env::var("APP_ENVIRONMENT")
+    let environment: Environment = std::env::var("APP_ENVIRONMENT")
         .unwrap_or_else(|_| "local".into())
         .try_into()
         .expect("Failed to parse APP_ENVIRONMENT.");
 
+    let environment_filename = format!("{}.yaml", environment.as_str());
+    
+    // Start with base configuration
     let settings = Config::builder()
         .add_source(config::File::from(configuration_directory.join("base.yaml")))
-        .build()?
-        .try_deserialize::<Settings>()?;
+        // Layer on the environment-specific values
+        .add_source(config::File::from(configuration_directory.join(environment_filename)).required(false))
+        // Add in settings from environment variables (with a prefix of APP and '__' as separator)
+        .add_source(config::Environment::with_prefix("APP").separator("__"))
+        .build()?;
 
-    Ok(settings)
+    settings.try_deserialize::<Settings>()
 }
 
 pub enum Environment {
