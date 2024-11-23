@@ -25,9 +25,19 @@ pub async fn subscribe(
 ) -> HttpResponse {
     match insert_subscriber(&pool, &form).await
     {
-        Ok(_) =>  HttpResponse::Ok().finish(),
-    
-        Err(_e) => HttpResponse::InternalServerError().finish()
+        Ok(_) => {
+            tracing::info!("New subscriber details have been saved");
+            HttpResponse::Ok().finish()
+        }
+        Err(e) => {
+            tracing::error!(
+                "Failed to add subscriber: {:?}. email={}, name={}", 
+                e, 
+                form.email, 
+                form.name
+            );
+            HttpResponse::InternalServerError().finish()
+        }
     }
 }
 
