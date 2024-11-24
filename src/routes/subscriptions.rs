@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpResponse, Responder};
 use sqlx::PgPool;  // Changed from PgConnection to PgPool
 use chrono::Utc;
 use uuid::Uuid;
@@ -21,78 +21,79 @@ pub struct FormData {
 
 pub async fn subscribe(
     form: web::Form<FormData>,
-    pool: web::Data<PgPool>,  // Changed to PgPool
-) -> HttpResponse {
-    // Log the incoming request data
-    tracing::info!(
-        "Received subscription request - email: {}, name: {}",
+    pool: web::Data<PgPool>,
+) -> impl Responder {
+    let result = sqlx::query!(
+        r#"
+        INSERT INTO subscriptions (id, email, name, subscribed_at)
+        VALUES ($1, $2, $3, $4)
+        "#,
+        Uuid::new_v4(),
         form.email,
-        form.name
-    );
+        form.name,
+        Utc::now()
+    )
+    .execute(pool.get_ref())
+    .await;
 
-    // Log the database connection info
-    tracing::info!(
-        "Attempting database operation with pool: {:?}",
-        pool.as_ref()
-    );
-
-    match insert_subscriber(&pool, &form).await
-    {
+    match result {
         Ok(_) => {
             tracing::info!("New subscriber details have been saved");
             HttpResponse::Ok().finish()
         }
         Err(e) => {
-            tracing::error!(
-                "Failed to add subscriber: {:#?}. email={}, name={}", 
-                e, 
-                form.email, 
-                form.name
-            );
-            HttpResponse::InternalServerError().finish()
+            // Check if this is a unique violation error
+            if let Some(db_error) = e.as_database_error() {
+                if db_error.code().as_deref() == Some("23505") {  // Postgres unique violation code
+                    tracing::warn!(
+                        "Attempt to subscribe with existing email: {}",
+                        form.email
+                    );
+                    return HttpResponse::BadRequest()
+                        .content_type("text/plain")
+                        .body("Email already exists");
+                }
+            }
+            
+            // For other errors, log and return 500
+            tracing::error!("Failed to execute query: {:?}", e);
+            HttpResponse::InternalServerError()
+                .content_type("text/plain")
+                .body("Internal server error")
         }
     }
 }
 
 #[tracing::instrument(
-    name = "Saving new subscriber details in the database", 
-    skip(form, pool),
-    fields(
-        request_id = %Uuid::new_v4(),
-        subscriber_email = %form.email,
-        subscriber_name = %form.name,
-    )
+    name = "Saving new subscriber details in the database",
+    skip(form, pool)
 )]
 pub async fn insert_subscriber(
-        pool: &PgPool,
-        form: &FormData
-    ) -> Result<(), sqlx::Error> {
-        let id = Uuid::new_v4();
-        let now = Utc::now();
-        
-        tracing::info!(
-            "Executing INSERT query with values - id: {}, email: {}, name: {}, time: {}",
-            id,
-            form.email,
-            form.name,
-            now
-        );
+    pool: &PgPool,
+    form: &FormData,
+) -> Result<(), sqlx::Error> {
+    let query = sqlx::query!(
+        r#"
+        INSERT INTO subscriptions (id, email, name, subscribed_at)
+        VALUES ($1, $2, $3, $4)
+        "#,
+        Uuid::new_v4(),
+        form.email,
+        form.name,
+        Utc::now()
+    );
 
-        sqlx::query!(
-            r#"
-            INSERT INTO subscriptions (id, email, name, subscribed_at)
-            VALUES ($1, $2, $3, $4)
-            "#,
-            id,
-            form.email,
-            form.name,
-            now
-        )
-        .execute(pool)
-        .await
-        .map_err(|e| {
-            tracing::error!("Database error details: {:#?}", e);
-            e
-        })?;
-        Ok(())
+    // Log the query details
+    tracing::info!("Executing database query");
+    
+    match query.execute(pool).await {
+        Ok(result) => {
+            tracing::info!("Query successful, rows affected: {}", result.rows_affected());
+            Ok(())
+        }
+        Err(e) => {
+            tracing::error!("Query failed: {:?}", e);
+            Err(e)
+        }
+    }
 }
