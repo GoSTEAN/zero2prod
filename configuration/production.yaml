@@ -1,9 +1,9 @@
 database:
-  host: "dpg-ct106fogph6c73begrf0-a"
+  host: "dpg-ct1hrhe8ii6s73ffvdbg-a.oregon-postgres.render.com"
   port: 5432
-  username: "zero2proddb_user"
-  password: "2Zb1bmGJQnYuLomXCutRmrRYSYM3F6GU"
-  database_name: "zero2proddb"
+  username: "newsletter_gv1q_user"
+  password: "ki3ie1JrszTi9LbQtJSnqX8Ig6VegLSo"
+  database_name: "newsletter_gv1q"
 
 application:
   host: "0.0.0.0"
