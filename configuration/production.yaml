@@ -4,14 +4,15 @@ database:
   username: "newsletter_gv1q_user"
   password: "ki3ie1JrszTi9LbQtJSnqX8Ig6VegLSo"
   database_name: "newsletter_gv1q"
+  require_ssl: true
 
 application:
   host: "0.0.0.0"
   port: 8000
   ssl:
-    enabled: true
-    cert_path: "/etc/ssl/certs/ca-certificates.crt"
-    verify_peer: true
+  enabled: true
+  cert_path: "/etc/ssl/certs/ca-certificates.crt"
+  verify_peer: true
 
 environment:
   SSL_CERT_DIR: "/etc/ssl/certs"
