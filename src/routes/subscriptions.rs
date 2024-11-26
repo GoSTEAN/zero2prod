@@ -50,8 +50,9 @@ pub async fn subscribe(
                         form.email
                     );
                     return HttpResponse::BadRequest()
-                        .content_type("text/plain")
+                        .content_type("text/plain")                        
                         .body("Email already exists");
+
                 }
             }
             
